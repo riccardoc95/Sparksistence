@@ -1,0 +1,12 @@
+conda activate pyspark
+
+export PYSPARK_DRIVER_PYTHON="/lustre/home/rceccaroni/.conda/envs/pyspark/bin/python"
+export PYSPARK_PYTHON="/lustre/home/rceccaroni/.conda/envs/pyspark/bin/python"
+export PYTHONPATH="/lustre/home/rceccaroni/.conda/envs/pyspark/bin/python"
+
+
+cd ${SPARK_HOME}
+command="bin/spark-submit ${HOME}/Notebooks/main.py --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=/lustre/home/rceccaroni$
+
+echo "Running $command" >&2
+$command
