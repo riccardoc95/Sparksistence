@@ -5,70 +5,67 @@ import pandas as pd
 from astropy.io import fits
 
 
-def neighbors(i, w, h, include_center=False):
-    size = w * h
+def neighbors(i, include_center=False):
+    size = w.value * h.value
     neighbors = []
-    if i - w >= 0:
-        neighbors.append(i - w)  # north
-    if i % w != 0:
+    if i - w.value >= 0:
+        neighbors.append(i - w.value)  # north
+    if i % w.value != 0:
         neighbors.append(i - 1)  # west
 
-    if (i + 1) % w != 0:
+    if (i + 1) % w.value != 0:
         neighbors.append(i + 1)  # east
 
-    if i + w < size:
-        neighbors.append(i + w)  # south
+    if i + w.value < size:
+        neighbors.append(i + w.value)  # south
 
-    if ((i - w - 1) >= 0) and (i % w != 0):
-        neighbors.append(i - w - 1)  # northwest
+    if ((i - w.value - 1) >= 0) and (i % w.value != 0):
+        neighbors.append(i - w.value - 1)  # northwest
 
-    if ((i - w + 1) >= 0) and ((i + 1) % w != 0):
-        neighbors.append(i - w + 1)  # northeast
+    if ((i - w.value + 1) >= 0) and ((i + 1) % w.value != 0):
+        neighbors.append(i - w.value + 1)  # northeast
 
-    if ((i + w - 1) < size) and (i % w != 0):
-        neighbors.append(i + w - 1)  # southwest
+    if ((i + w.value - 1) < size) and (i % w.value != 0):
+        neighbors.append(i + w.value - 1)  # southwest
 
-    if ((i + w + 1) < size) and ((i + 1) % w != 0):
-        neighbors.append(i + w + 1)  # southeast
+    if ((i + w.value + 1) < size) and ((i + 1) % w.value != 0):
+        neighbors.append(i + w.value + 1)  # southeast
 
     if include_center:
         neighbors.append(i)
     return neighbors
 
 
-def fmap_argmax_neighbors(i, w, h, include_center=False):
-    neigh = neighbors(i, w, h, include_center)
-    neigh.sort(key=lambda p: img_broad.value[int(p) // w, int(p) % w], reverse=True)
+def fmap_argmax_neighbors(i, include_center=True):
+    neigh = neighbors(i, include_center)
+    neigh.sort(key=lambda p: img_flatten.value[p], reverse=True)
     return neigh[0]
 
 
-def fmap_root(x):
-    path = [x]
-    root = parents.value[int(x)]
-    while root != path[-1]:
-        path.append(root)
-        root = parents.value[int(root)]
-    return (root, x)
-
-
 def freduce_findmin(x, y):
-    w = img_broad.value.shape[0]
-    if img_broad.value[int(x) // w, int(x) % w] > img_broad.value[int(y) // w, int(y) % w]:
+    if img_flatten.value[x] > img_flatten.value[y]:
         return y
     else:
         return x
 
 
+def fmap_root(x):
+    path = x
+    root = fmap_argmax_neighbors(int(x))
+    while root != path:
+        path =root
+        root = fmap_argmax_neighbors(int(root))
+    return (str(root), x)
+
+
 def fmap_pts_to_dgms(x):
-    w = img_broad.value.shape[0]
+    x_birth = x[0] // w.value
+    y_birth = x[0] % w.value
+    x_death = x[1] // w.value
+    y_death = x[1] % w.value
 
-    x_birth = x[0] // w
-    y_birth = x[0] % w
-    x_death = x[1] // w
-    y_death = x[1] % w
-
-    birth = img_broad.value[x_birth, y_birth]
-    death = img_broad.value[x_death, y_death]
+    birth = img_flatten.value[x[0]]
+    death = img_flatten.value[x[1]]
 
     return (birth, death, x_birth, y_birth, x_death, y_death)
 
@@ -84,21 +81,17 @@ img -= img.min()
 img /= img.max()
 
 
-img_broad = spark.sparkContext.broadcast(img)
-rdd_idxs = spark.sparkContext.parallelize(np.arange(img.size), numSlices=100)
+w = spark.sparkContext.broadcast(img.shape[0])
+h = spark.sparkContext.broadcast(img.shape[1])
+img_flatten = spark.sparkContext.broadcast(img.flatten())
 
 
-rdd_parents = rdd_idxs.map(lambda x: fmap_argmax_neighbors(x, img_broad.value.shape[0], img_broad.value.shape[1], include_center=True))
-parents = spark.sparkContext.broadcast(rdd_parents.collect())
+rdd_idxs = spark.sparkContext.parallelize(np.arange(img.size), 256)
+
 
 rdd_roots = rdd_idxs.map(lambda x: fmap_root(x))
 rdd_roots = rdd_roots.reduceByKey(freduce_findmin)
 
-rdd_dgms = rdd_roots.map(fmap_pts_to_dgms)
+dgms = rdd_roots.collect()
 
-
-dgms = rdd_dgms.collect()#.saveAsTextFile('prova.txt')
-dgms = pd.DataFrame(dgms, columns=['birth', 'death', 'x_birth', 'y_birth', 'x_death', 'y_death'])
-
-
-dgms.to_csv('dgms.csv', index=False)
+print(len(dgms))
