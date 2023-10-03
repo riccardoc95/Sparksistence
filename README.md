@@ -1,2 +1,2 @@
-# SPH
+# Sparksistence
 Spark Persistent Homology
