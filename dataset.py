@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 from astropy.modeling import models
 from datetime import datetime
 
+import argparse
 import os
 
 
@@ -189,20 +190,29 @@ def stars(image, number, max_counts=10000, gain=1, dim_max_star=250, seed=12345)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        prog='dataset',
+        description='Create astronomical image dataset',
+        epilog='')
 
-    dataset_dim = 500
-    image_dim = 1000
-    out_dir = 'dataset'
+    parser.add_argument('-o', dest='out_dir', action='store',
+                        default='dataset', help='')
+    parser.add_argument('-dd', dest='dataset_dim', action='store',
+                        default=500, help='')
+    parser.add_argument('-id', dest='image_dim', action='store',
+                        default=1000, help='')
 
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    args = parser.parse_args()
 
-    for i in range(dataset_dim):
+    if not os.path.exists(args.out_dir):
+        os.makedirs(args.out_dir)
+
+    for i in range(int(args.dataset_dim)):
 
         seed = int(datetime.now().timestamp())
         noise_rng = np.random.default_rng(seed)
 
-        synthetic_image = np.zeros([image_dim, image_dim])
+        synthetic_image = np.zeros([int(args.image_dim), int(args.image_dim)])
         noise_only = read_noise(synthetic_image, amount=5, gain=1)
         bias_only = bias(synthetic_image, 1100, realistic=True)
 
@@ -217,5 +227,4 @@ if __name__ == '__main__':
 
         stars_with_background = synthetic_image + stars_only + noise_only#+ sky_only + bias_only + dark_only
 
-        np.save(out_dir + '/{}.npy'.format(i+1),stars_with_background)
-        break
+        np.save(args.out_dir + '/{}.npy'.format(i+1),stars_with_background)
