@@ -24,12 +24,10 @@ def my_saddle(x):
         return False
 
 
-def my_saddle_2(x, y):
+def my_saddle_2(x):
     x = x.flatten()
-    y = y.flatten()
     if x[4] < x[3] and x[4] < x[5]:
         return True
-
     elif x[4] < x[1] and x[4] < x[7]:
         return True
     elif x[4] < x[0] and x[4] < x[8]:

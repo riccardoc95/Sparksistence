@@ -3,15 +3,20 @@ from astropy.io import fits
 
 from ph0 import persistence
 
-import sys
+import argparse
 
-arg1 = sys.argv[1]
-arg2 = sys.argv[2]
 
-img = fits.getdata("C:\\Users\\ricca\\Documents\\PyProjects\\TopoDenoising\\data\\f444w_finalV4.onlyPSF.fits")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        prog='main',
+        description='PH0',
+        epilog='')
 
-image = img[0:200,0:200].astype(np.float32)
+    parser.add_argument('--image_path', dest='img_path', action='store',
+                        default='', help='')
 
-dgm = persistence(image)
+    args = parser.parse_args()
 
-print(dgm)
+    img = np.load(args.img_path).astype(np.float32)
+
+    dgm = persistence(img)

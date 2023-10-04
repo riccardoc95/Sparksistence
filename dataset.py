@@ -6,6 +6,7 @@ import numpy as np
 from tqdm.auto import tqdm
 from astropy.modeling import models
 from datetime import datetime
+from scipy.ndimage import gaussian_filter
 
 import argparse
 import os
@@ -146,8 +147,8 @@ def stars(image, number, max_counts=10000, gain=1, dim_max_star=250, seed=12345)
     flux_range = [max_counts/10, max_counts]
     
     y_max, x_max = image.shape
-    xmean_range = [int(dim_max_star / 2), x_max - int(dim_max_star / 2)]
-    ymean_range = [int(dim_max_star / 2), y_max - int(dim_max_star / 2)]
+    xmean_range = [int(dim_max_star / 2), x_max + int(dim_max_star / 2)]
+    ymean_range = [int(dim_max_star / 2), y_max + int(dim_max_star / 2)]
     xstddev_range = [4, 4]
     ystddev_range = [4, 4]
     params = dict([('amplitude', flux_range),
@@ -161,8 +162,10 @@ def stars(image, number, max_counts=10000, gain=1, dim_max_star=250, seed=12345)
                                           seed=seed)
 
     model = models.Gaussian2D(x_stddev=1, y_stddev=1)
-    
-    image = np.zeros(image.shape, dtype=float)
+
+    H, W = image.shape
+
+    image = np.zeros((H + 2 * dim_max_star, W + 2 * dim_max_star), dtype=float)
     
     params_to_set = []
     for param in sources.colnames:
@@ -185,7 +188,7 @@ def stars(image, number, max_counts=10000, gain=1, dim_max_star=250, seed=12345)
         image[(int(source['x_mean']) - int(dim_max_star / 2)):(int(source['x_mean']) + int(dim_max_star / 2)), (int(source['y_mean']) - int(dim_max_star / 2)):(int(source['y_mean']) + int(dim_max_star / 2))] = image[(int(source['x_mean']) - int(dim_max_star / 2)):(int(source['x_mean']) + int(dim_max_star / 2)), (int(source['y_mean']) - int(dim_max_star / 2)):(int(source['y_mean']) + int(dim_max_star / 2))] + model(xidx, yidx)
     
     
-    return image
+    return image[dim_max_star:(dim_max_star + H),dim_max_star:(dim_max_star + W)]
 
 
 
@@ -198,9 +201,9 @@ if __name__ == '__main__':
     parser.add_argument('-o', dest='out_dir', action='store',
                         default='dataset', help='')
     parser.add_argument('-dd', dest='dataset_dim', action='store',
-                        default=500, help='')
+                        default=1, help='')
     parser.add_argument('-id', dest='image_dim', action='store',
-                        default=1000, help='')
+                        default=10000, help='')
 
     args = parser.parse_args()
 
@@ -220,11 +223,12 @@ if __name__ == '__main__':
         dark_cur = 0.1
         dark_only = dark_current(synthetic_image, dark_cur, dark_exposure, hot_pixels=True)
 
-        sky_level = 20
+        sky_level = 5
         sky_only = sky_background(synthetic_image, sky_level)
 
-        stars_only = stars(synthetic_image, int(0.0034 * synthetic_image.size), max_counts=2000, seed=seed)
+        stars_only = stars(synthetic_image, int(0.0034 * synthetic_image.size), max_counts=2000, seed=seed) #
 
-        stars_with_background = synthetic_image + stars_only + noise_only#+ sky_only + bias_only + dark_only
+        stars_with_background = synthetic_image + stars_only#+ noise_only + sky_only + bias_only + dark_only
 
-        np.save(args.out_dir + '/{}.npy'.format(i+1),stars_with_background)
+        img = stars_with_background #gaussian_filter(stars_with_background, sigma=5)
+        np.save(args.out_dir + '/{}.npy'.format(i+1),img)
