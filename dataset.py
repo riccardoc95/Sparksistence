@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
         stars_only = stars(synthetic_image, int(0.0034 * synthetic_image.size), max_counts=2000, seed=seed) #
 
-        stars_with_background = synthetic_image + stars_only#+ noise_only + sky_only + bias_only + dark_only
+        stars_with_background = synthetic_image + stars_only + noise_only + sky_only + bias_only + dark_only
 
         img = stars_with_background #gaussian_filter(stars_with_background, sigma=5)
         np.save(args.out_dir + '/{}.npy'.format(i+1),img)

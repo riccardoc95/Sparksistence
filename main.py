@@ -20,3 +20,5 @@ if __name__ == '__main__':
     img = np.load(args.img_path).astype(np.float32)
 
     dgm = persistence(img)
+    print(dgm)
+
