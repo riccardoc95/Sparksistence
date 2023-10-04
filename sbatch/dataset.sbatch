@@ -16,6 +16,7 @@
 # Generally speaking, don't touch the following, misc other configuration
 
 #SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=8G
 
 
-srun python ../dataset.py -dd 10 -id 1000
+srun python ../dataset.py -dd 100 -id 10000
