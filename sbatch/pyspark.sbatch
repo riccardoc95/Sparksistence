@@ -83,8 +83,8 @@ export MAGPIE_LOCAL_DIR="/lustre/home/${USER}/tmp/magpie"
 # Magpie job type
 export MAGPIE_JOB_TYPE="script"
 
-THIS_SCRIPT=$(readlink -f "$0")
-THIS_PATH=$(dirname "THIS_SCRIPT")
+export THIS_SCRIPT=$(readlink -f "$0")
+export THIS_PATH=$(dirname "$THIS_SCRIPT")
 
 export MAGPIE_JOB_SCRIPT="$(dirname "$THIS_PATH")/scripts/pyspark.sh"
 

@@ -9,6 +9,8 @@ from utils import maxpool2d
 from utils import neighbors
 from utils import my_saddle
 
+from tqdm import tqdm
+
 
 def persistence(img, return_points=False):
     H, W = img.shape
@@ -66,8 +68,10 @@ def persistence(img, return_points=False):
     pdeath = []
     death_idxs = set()
     changer = p_idxs.copy()
-    for x in borders_idxs:
+    for x in tqdm(borders_idxs):
         # TODO: se tutti i death point sono trovati allora fermati!!
+        if len(pdeath) == (len(pbirth) - 1):
+            break
         check = np.unique(changer[new_m[np.array(neighbors(x, H, W, mode=9))] - 1])
         if len(check) >= 2:
             check = tuple(check[:2])
