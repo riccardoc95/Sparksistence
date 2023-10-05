@@ -1,7 +1,14 @@
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 import numpy as np
 from utils import maxpool2d
 from utils import neighbors
 from utils import my_saddle
+
 
 def persistence(img, return_points=False):
     H, W = img.shape

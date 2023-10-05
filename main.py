@@ -1,9 +1,15 @@
 import numpy as np
 from astropy.io import fits
+import argparse
+
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 
 from ph0 import persistence
-
-import argparse
 
 
 if __name__ == '__main__':
