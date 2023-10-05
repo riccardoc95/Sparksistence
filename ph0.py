@@ -67,6 +67,7 @@ def persistence(img, return_points=False):
     death_idxs = set()
     changer = p_idxs.copy()
     for x in borders_idxs:
+        # TODO: se tutti i death point sono trovati allora fermati!!
         check = np.unique(changer[new_m[np.array(neighbors(x, H, W, mode=9))] - 1])
         if len(check) >= 2:
             check = tuple(check[:2])
