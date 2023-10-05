@@ -82,11 +82,7 @@ export MAGPIE_LOCAL_DIR="/lustre/home/${USER}/tmp/magpie"
 
 # Magpie job type
 export MAGPIE_JOB_TYPE="script"
-
-export THIS_SCRIPT=$(readlink -f "$0")
-export THIS_PATH=$(dirname "$THIS_SCRIPT")
-
-export MAGPIE_JOB_SCRIPT="$(dirname "$THIS_PATH")/scripts/pyspark.sh"
+export MAGPIE_JOB_SCRIPT="${USER}/Sparksistence/scripts/pyspark.sh"
 
 # Specify script startup / shutdown time window
 export MAGPIE_STARTUP_TIME=30
