@@ -49,12 +49,12 @@ def persistence(img, return_points=False):
     del p1, p2
 
     img_pad = np.pad(img.reshape(H,W), ((1, 1), (1, 1)), 'constant', constant_values=0)
-    if img.min() not in img[pbirth]:
-        for x in borders_idxs.copy():
-            w = x // W
-            h = x % W
-            if not my_saddle(img_pad[w:(w+3), h:(h+3)]):
-                borders_idxs.discard(x)
+    #if img.min() not in img[pbirth]:
+    for x in borders_idxs.copy():
+        w = x // W
+        h = x % W
+        if not my_saddle(img_pad[w:(w+3), h:(h+3)]):
+            borders_idxs.discard(x)
     for x in np.flip(pbirth):
         for y in neighbors(x, H, W):
             if new_m[y] != new_m[x]:
