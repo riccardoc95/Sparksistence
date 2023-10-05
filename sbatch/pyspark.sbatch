@@ -117,6 +117,7 @@ export HADOOP_CONF_FILES="${HOME}/myscripts/conf/hadoop"
 export HADOOP_FILESYSTEM_MODE="hdfsoverlustre"
 export HADOOP_HDFS_REPLICATION=3
 export HADOOP_HDFSOVERLUSTRE_PATH="/lustre/home/${USER}/hdfsoverlustre/"
+export HADOOP_JOB="terasort"
 
 ############################################################################
 # Spark Core Configurations
@@ -147,6 +148,9 @@ export SPARK_MEMORY_FRACTION=0.99
 
 # SPARK_SHUFFLE_MEMORY_FRACTION
 # export SPARK_SHUFFLE_MEMORY_FRACTION=0.2
+
+
+export SPARK_JOB='sparkpi'
 
 ############################################################################
 # Run Job
