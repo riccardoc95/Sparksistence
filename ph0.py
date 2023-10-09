@@ -33,12 +33,12 @@ def persistence(img, return_points=False):
     idxs = np.argsort(birth)
     pbirth = pbirth[idxs]
 
-    dict_replace = {pbirth[i]: i+1 for i in range(birth.size)}
+    dict_replace = {pbirth[i]: i + 1 for i in range(birth.size)}
     p_idxs = np.sort(idxs + 1)
-
 
     def replace(element):
         return dict_replace.get(element, element)
+
     vreplace = np.vectorize(replace)
     new_m = vreplace(m)
 
@@ -53,13 +53,13 @@ def persistence(img, return_points=False):
 
     img_pad = np.pad(img.reshape(H,W), ((1, 1), (1, 1)), 'constant', constant_values=0)
 
+    img_min = img.min()
     for x in borders_idxs.copy():
         w = x // W
         h = x % W
-        # Mod in new algorithm version:
-        if img_pad[w,h] == 0:
+        if img[x] == img_min:
             continue
-        elif not my_saddle(img_pad[w:(w+3), h:(h+3)]):
+        elif not my_saddle(img_pad[w:(w + 3), h:(h + 3)]):
             borders_idxs.discard(x)
     for x in np.flip(pbirth):
         for y in neighbors(x, H, W):
@@ -75,12 +75,12 @@ def persistence(img, return_points=False):
     pdeath = []
     death_idxs = set()
     # Mod in new algorithm version:
-    if 0.0 in img[pbirth]:
+    if img_min not in img[pbirth]:
+        changer = p_idxs.copy()
+    else:
         changer = p_idxs.copy()
         changer[0] = changer[-1]
         pbirth = pbirth[1:]
-    else:
-        changer = p_idxs.copy()
 
     len_pbirth = (len(pbirth) - 1)
 
@@ -88,7 +88,7 @@ def persistence(img, return_points=False):
         # Mod in new algorithm version:
         if len(pdeath) == len_pbirth:
             break
-        check = np.unique(changer[new_m[np.array(neighbors(x, H, W, mode=9))] - 1])
+        check = np.unique(changer[new_m[np.array(neighbors(x, H, W, mode=8))] - 1])
         if len(check) >= 2:
             check = tuple(check[:2])
             if check not in death_idxs:

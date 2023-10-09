@@ -35,7 +35,7 @@ def start_sparkcontext(ncores="2", message_maxSize="1024", maxResultSize="409800
 def image_to_array(path):
     data = np.load(path)
 
-    return data.astype(np.float32)
+    return data.astype(np.float32, copy=False)
 
 
 def experiment(data_path='data', n_imgs=None, ncores="2", message_maxSize="1024", maxResultSize="4098000000"):
