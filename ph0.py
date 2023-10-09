@@ -26,7 +26,7 @@ def persistence(img, return_points=False):
     del m_temp
 
     # Mod in new algorithm version:
-    m = m * (img > 0)
+    m = m * (img > 0) + img.argmin() * (img == 0)
 
     pbirth = np.unique(m)
     birth = img[pbirth]
