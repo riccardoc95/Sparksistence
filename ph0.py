@@ -9,10 +9,10 @@ from utils import maxpool2d
 from utils import neighbors
 from utils import my_saddle
 
-#from tqdm import tqdm
-
-
 def persistence(img, return_points=False):
+    img -= img.min()
+    img /= img.max()
+
     H, W = img.shape
     p, m = maxpool2d(img, kernel_size=3, stride=1, padding=1, return_indices=True)
     del p
@@ -24,6 +24,9 @@ def persistence(img, return_points=False):
         m_temp = m
         m = m_temp[m_temp]
     del m_temp
+
+    # Mod in new algorithm version:
+    m = m * (img > 0)
 
     pbirth = np.unique(m)
     birth = img[pbirth]
@@ -49,11 +52,14 @@ def persistence(img, return_points=False):
     del p1, p2
 
     img_pad = np.pad(img.reshape(H,W), ((1, 1), (1, 1)), 'constant', constant_values=0)
-    #if img.min() not in img[pbirth]:
+
     for x in borders_idxs.copy():
         w = x // W
         h = x % W
-        if not my_saddle(img_pad[w:(w+3), h:(h+3)]):
+        # Mod in new algorithm version:
+        if img_pad[w,h] == 0:
+            continue
+        elif not my_saddle(img_pad[w:(w+3), h:(h+3)]):
             borders_idxs.discard(x)
     for x in np.flip(pbirth):
         for y in neighbors(x, H, W):
@@ -68,11 +74,19 @@ def persistence(img, return_points=False):
 
     pdeath = []
     death_idxs = set()
-    changer = p_idxs.copy()
-    #for x in tqdm(borders_idxs):
+    # Mod in new algorithm version:
+    if 0.0 in img[pbirth]:
+        changer = p_idxs.copy()
+        changer[0] = changer[-1]
+        pbirth = pbirth[1:]
+    else:
+        changer = p_idxs.copy()
+
+    len_pbirth = (len(pbirth) - 1)
+
     for x in borders_idxs:
-        # TODO: se tutti i death point sono trovati allora fermati!!
-        if len(pdeath) == (len(pbirth) - 1):
+        # Mod in new algorithm version:
+        if len(pdeath) == len_pbirth:
             break
         check = np.unique(changer[new_m[np.array(neighbors(x, H, W, mode=9))] - 1])
         if len(check) >= 2:
