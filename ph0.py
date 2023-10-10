@@ -64,7 +64,7 @@ def persistence(img, return_points=False):
         h = x % W
         if img[x] == img_min:
             continue
-        elif img_min in img_pad[w:(w + 3), h:(h + 3)]:
+        elif img_min in img[neighbors(x, H, W, mode=8)]:
             borders_idxs.discard(x)
         elif not my_saddle(img_pad[w:(w + 3), h:(h + 3)]):
             borders_idxs.discard(x)
@@ -102,9 +102,12 @@ def persistence(img, return_points=False):
                 pdeath.append([check[0] - 1, x])
     del changer
 
-    pdeath = np.array(pdeath)
-    pdeath = pdeath[np.argsort(pdeath[:, 0])][:, 1]
-    pdeath = np.append(pdeath, np.argmin(img))
+    if len(pdeath) > 0:
+        pdeath = np.array(pdeath)
+        pdeath = pdeath[np.argsort(pdeath[:, 0])][:, 1]
+        pdeath = np.append(pdeath, np.argmin(img))
+    else:
+        pdeath = np.array([np.argmin(img)])
 
     if return_points:
         dgm = np.stack([img[pbirth],
